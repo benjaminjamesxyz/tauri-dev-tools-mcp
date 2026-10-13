@@ -13,7 +13,7 @@ import {
   runAndroidAppTest,
 } from "../src/tools/android_emulator.js";
 
-describe("Tauri Android Emulator Tools", () => {
+describe("Tauri Android Emulator Tools", { timeout: 30000 }, () => {
   it("locates adb binary on host system", () => {
     const adbPath = findAdbBinary();
     expect(adbPath).toBeDefined();

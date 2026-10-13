@@ -113,6 +113,8 @@ export function createAndroidAvd(options: AvdCreateOptions): AvdCreateResult {
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
       timeout: 30_000,
+      windowsHide: true,
+      shell: process.platform === "win32" ? "cmd.exe" : undefined,
       env: {
         ...process.env,
         ...(env.androidHome ? { ANDROID_HOME: env.androidHome, ANDROID_SDK_ROOT: env.androidHome } : {}),
@@ -167,12 +169,15 @@ export function installAndroidDependencies(options?: AndroidDepsInstallOptions):
     "platforms;android-34",
     "build-tools;34.0.0",
   ];
-
   if (options?.acceptLicenses !== false) {
     try {
-      execSync(`yes | "${sdkmanager}" --licenses`, {
-        stdio: "ignore",
+      execSync(`"${sdkmanager}" --licenses`, {
+        input: "y\n".repeat(50),
+        encoding: "utf8",
+        stdio: ["pipe", "ignore", "ignore"],
         timeout: 30_000,
+        windowsHide: true,
+        shell: process.platform === "win32" ? "cmd.exe" : undefined,
         env: {
           ...process.env,
           ...(env.androidHome ? { ANDROID_HOME: env.androidHome, ANDROID_SDK_ROOT: env.androidHome } : {}),
@@ -183,18 +188,20 @@ export function installAndroidDependencies(options?: AndroidDepsInstallOptions):
     }
   }
 
-  const cmd = `yes | "${sdkmanager}" ${packages.map(p => `"${p}"`).join(" ")}`;
+  const cmd = `"${sdkmanager}" ${packages.map(p => `"${p}"`).join(" ")}`;
   try {
     const out = execSync(cmd, {
+      input: "y\n".repeat(20),
       encoding: "utf8",
       stdio: ["pipe", "pipe", "pipe"],
       timeout: 300_000,
+      windowsHide: true,
+      shell: process.platform === "win32" ? "cmd.exe" : undefined,
       env: {
         ...process.env,
         ...(env.androidHome ? { ANDROID_HOME: env.androidHome, ANDROID_SDK_ROOT: env.androidHome } : {}),
       },
     });
-
     return {
       success: true,
       installedPackages: packages,
@@ -222,8 +229,13 @@ export function listAndroidEmulators(overrides?: AndroidPathOverrides): Emulator
   // 1. List defined AVDs
   if (emulatorBin) {
     try {
-      const out = execSync(`"${emulatorBin}" -list-avds`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5000 });
-      out.split("\n").map(l => l.trim()).filter(Boolean).forEach(a => avds.push(a));
+      const out = execSync(`"${emulatorBin}" -list-avds`, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+        timeout: 4000,
+        windowsHide: true,
+      });
+      out.split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(a => avds.push(a));
     } catch {
       // Fallback to avdmanager
     }
@@ -231,8 +243,14 @@ export function listAndroidEmulators(overrides?: AndroidPathOverrides): Emulator
 
   if (avds.length === 0 && avdmanager) {
     try {
-      const out = execSync(`"${avdmanager}" list avd -c`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5000 });
-      out.split("\n").map(l => l.trim()).filter(Boolean).forEach(a => avds.push(a));
+      const out = execSync(`"${avdmanager}" list avd -c`, {
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "ignore"],
+        timeout: 4000,
+        windowsHide: true,
+        shell: process.platform === "win32" ? "cmd.exe" : undefined,
+      });
+      out.split(/\r?\n/).map(l => l.trim()).filter(Boolean).forEach(a => avds.push(a));
     } catch {
       // Ignore
     }
@@ -255,9 +273,13 @@ export function listAndroidEmulators(overrides?: AndroidPathOverrides): Emulator
   // 2. List running devices via ADB
   const runningDevices: EmulatorDevice[] = [];
   try {
-    const adbDevicesOut = execSync(`"${adb}" devices -l`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 5000 });
-    const lines = adbDevicesOut.split("\n").slice(1); // skip "List of devices attached"
-
+    const adbDevicesOut = execSync(`"${adb}" devices -l`, {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: 4000,
+      windowsHide: true,
+    });
+    const lines = adbDevicesOut.split(/\r?\n/).slice(1);
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
