@@ -22,6 +22,32 @@ Production-ready Model Context Protocol (MCP) tool suite designed to build, test
 | `tauri_android_app_install` | Installs built Tauri APK onto running emulator or device via ADB. |
 | `tauri_android_test_run` | Launches installed Android app, measures startup performance, and scans logcat for fatal exceptions. |
 | `tauri_android_deps_install` | Installs missing Android SDK packages (emulator, system-images, platform-tools) via `sdkmanager`. |
+
+## Host Prerequisites & Automation Matrix
+
+### 1. Desktop Development
+
+| Platform / Tool | Requirement | Managed By | Notes |
+|---|---|---|---|
+| **Rust & Cargo** | Stable (1.78+) | Manual (`rustup`) | Required for compiling Tauri native core |
+| **Node.js / Bun** | Node 18+ or Bun 1.0+ | Manual | Required for running frontend bundlers and MCP server |
+| **Linux (WebKitGTK)** | `libwebkit2gtk-4.1-dev` | Manual (`apt` / `pacman`) | Required for native Linux window webview |
+| **Windows (WebView2)** | Evergreen Runtime | Manual / Preinstalled | Standard on Windows 10/11 |
+| **macOS (WebKit)** | Xcode CLI Tools | Manual (`xcode-select --install`) | Built-in Cocoa WebKit framework |
+
+### 2. Android Mobile Development
+
+| Dependency | Requirement | Managed By | Purpose |
+|---|---|---|---|
+| **Java JDK** | JDK 17+ (e.g. OpenJDK 17) | **Manual Host Prerequisite** | Required for Gradle build daemon |
+| **Android SDK Root** | `~/Android/Sdk` or `ANDROID_HOME` | **Auto-Detected by MCP** | Base SDK directory |
+| **Command-line Tools** | `cmdline-tools;latest` | **Manual Host Prerequisite** | Provides `sdkmanager` and `avdmanager` binaries |
+| **Android NDK** | NDK r25+ (under `ndk/`) | **Auto-Detected by MCP** | Required for compiling Rust `.so` shared libraries |
+| **SDK Packages** | `emulator`, `platform-tools`, `system-images` | **Automated via `tauri_android_deps_install`** | Downloads packages and accepts Google licenses |
+| **Virtual AVD** | Emulator instance | **Automated via `tauri_android_avd_create`** | Configures AVD via `avdmanager` (auto-bootstraps on start) |
+
+## Quick Start
+
 ### Installation & Build
 ```bash
 bun install
@@ -49,7 +75,7 @@ Add to your client MCP configuration:
 
 ## Associated Agent Skill
 - Skill Specification: [`SKILL.md`](./SKILL.md) (mirrored to [`.agents/skills/tauri-dev-tools/SKILL.md`](./.agents/skills/tauri-dev-tools/SKILL.md)).
-- Provides AI agents with decision trees, failure remediation, and step-by-step operating recipes for all 10 MCP tools.
+- Provides AI agents with decision trees, failure remediation, and step-by-step operating recipes for all 16 MCP tools.
 
 ## Research Board & Architecture
 - Research findings across 6 parallel streams: `RESEARCH_BOARD.md`
