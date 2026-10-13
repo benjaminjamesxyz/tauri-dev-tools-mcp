@@ -39,6 +39,7 @@ describe("Tauri Dev Tools Skill Specification", () => {
       "tauri_android_avd_create",
       "tauri_android_app_install",
       "tauri_android_test_run",
+      "tauri_android_deps_install",
     ];
     for (const tool of expectedTools) {
       expect(skillContent).toContain(tool);

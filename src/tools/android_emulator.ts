@@ -137,6 +137,80 @@ export function createAndroidAvd(options: AvdCreateOptions): AvdCreateResult {
   }
 }
 
+export interface AndroidDepsInstallOptions extends AndroidPathOverrides {
+  packages?: string[];
+  acceptLicenses?: boolean;
+}
+
+export interface AndroidDepsInstallResult {
+  success: boolean;
+  installedPackages: string[];
+  output: string;
+}
+
+export function installAndroidDependencies(options?: AndroidDepsInstallOptions): AndroidDepsInstallResult {
+  const env = resolveAndroidEnvironment(options);
+  const sdkmanager = findSdkmanagerBinary(env.androidHome);
+
+  if (!sdkmanager) {
+    return {
+      success: false,
+      installedPackages: [],
+      output: "sdkmanager binary not found. Install Android SDK Command-line Tools first.",
+    };
+  }
+
+  const packages = options?.packages ?? [
+    "platform-tools",
+    "emulator",
+    "system-images;android-34;google_apis;x86_64",
+    "platforms;android-34",
+    "build-tools;34.0.0",
+  ];
+
+  if (options?.acceptLicenses !== false) {
+    try {
+      execSync(`yes | "${sdkmanager}" --licenses`, {
+        stdio: "ignore",
+        timeout: 30_000,
+        env: {
+          ...process.env,
+          ...(env.androidHome ? { ANDROID_HOME: env.androidHome, ANDROID_SDK_ROOT: env.androidHome } : {}),
+        },
+      });
+    } catch {
+      // Ignore license command error
+    }
+  }
+
+  const cmd = `yes | "${sdkmanager}" ${packages.map(p => `"${p}"`).join(" ")}`;
+  try {
+    const out = execSync(cmd, {
+      encoding: "utf8",
+      stdio: ["pipe", "pipe", "pipe"],
+      timeout: 300_000,
+      env: {
+        ...process.env,
+        ...(env.androidHome ? { ANDROID_HOME: env.androidHome, ANDROID_SDK_ROOT: env.androidHome } : {}),
+      },
+    });
+
+    return {
+      success: true,
+      installedPackages: packages,
+      output: out.trim(),
+    };
+  } catch (err: unknown) {
+    const stdout = err && typeof err === "object" && "stdout" in err ? String(err.stdout) : "";
+    const stderr = err && typeof err === "object" && "stderr" in err ? String(err.stderr) : "";
+    return {
+      success: false,
+      installedPackages: [],
+      output: (stdout + "\n" + stderr).trim() || String(err),
+    };
+  }
+}
+
 export function listAndroidEmulators(overrides?: AndroidPathOverrides): EmulatorListResult {
   const env = resolveAndroidEnvironment(overrides);
   const adb = findAdbBinary(env.androidHome);

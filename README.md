@@ -21,7 +21,7 @@ Production-ready Model Context Protocol (MCP) tool suite designed to build, test
 | `tauri_android_avd_create` | Creates/configures an Android Virtual Device (AVD) using host `avdmanager`. |
 | `tauri_android_app_install` | Installs built Tauri APK onto running emulator or device via ADB. |
 | `tauri_android_test_run` | Launches installed Android app, measures startup performance, and scans logcat for fatal exceptions. |
-
+| `tauri_android_deps_install` | Installs missing Android SDK packages (emulator, system-images, platform-tools) via `sdkmanager`. |
 ### Installation & Build
 ```bash
 bun install

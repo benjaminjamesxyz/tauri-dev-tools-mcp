@@ -7,6 +7,7 @@ import {
   findAvdmanagerBinary,
   listAndroidEmulators,
   createAndroidAvd,
+  installAndroidDependencies,
   startAndroidEmulator,
   installApkOnAndroid,
   runAndroidAppTest,
@@ -42,6 +43,16 @@ describe("Tauri Android Emulator Tools", () => {
     });
 
     expect(result.name).toBe("test_avd_mock");
+    expect(result.output).toBeDefined();
+  });
+
+  it("invokes sdkmanager package installer with structured result", () => {
+    const result = installAndroidDependencies({
+      packages: ["platform-tools"],
+      acceptLicenses: false,
+    });
+
+    expect(result).toBeDefined();
     expect(result.output).toBeDefined();
   });
 

@@ -22,6 +22,7 @@ import {
   listAndroidEmulators,
   startAndroidEmulator,
   createAndroidAvd,
+  installAndroidDependencies,
   installApkOnAndroid,
   runAndroidAppTest,
 } from "./tools/android_emulator.js";
@@ -136,6 +137,13 @@ const AndroidTestRunSchema = z.object({
   waitLaunchMs: z.number().optional(),
   androidHome: z.string().optional(),
 });
+
+const AndroidDepsInstallSchema = z.object({
+  packages: z.array(z.string()).optional(),
+  acceptLicenses: z.boolean().optional(),
+  androidHome: z.string().optional(),
+});
+
 export function createTauriMcpServer(): Server {
   const server = new Server(
     {
@@ -368,6 +376,18 @@ export function createTauriMcpServer(): Server {
             required: ["name"],
           },
         },
+        {
+          name: "tauri_android_deps_install",
+          description: "Install Android SDK dependencies (emulator, platform-tools, system-images, build-tools) via sdkmanager.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              packages: { type: "array", items: { type: "string" }, description: "Optional package list to install." },
+              acceptLicenses: { type: "boolean", description: "Accept licenses automatically (default true)." },
+              androidHome: { type: "string", description: "Optional path to Android SDK root." },
+            },
+          },
+        },
       ],
     };
   });
@@ -529,6 +549,13 @@ export function createTauriMcpServer(): Server {
         };
       }
 
+      case "tauri_android_deps_install": {
+        const args = AndroidDepsInstallSchema.parse(safeArgs);
+        const result = installAndroidDependencies(args);
+        return {
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+        };
+      }
       default:
         throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${name}`);
     }

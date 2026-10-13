@@ -32,6 +32,7 @@ describe("Tauri MCP Server End-to-End Protocol", () => {
     expect(toolNames).toContain("tauri_android_app_install");
     expect(toolNames).toContain("tauri_android_test_run");
     expect(toolNames).toContain("tauri_android_avd_create");
+    expect(toolNames).toContain("tauri_android_deps_install");
 
     // 2. Call tauri_doctor
     const doctorCall = await client.callTool({

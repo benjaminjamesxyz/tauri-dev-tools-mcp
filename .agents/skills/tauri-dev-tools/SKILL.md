@@ -31,7 +31,7 @@ Operate the `tauri-dev-tools` Model Context Protocol (MCP) server to develop, te
 | `tauri_android_avd_create` | Create/configure AVD via avdmanager | `{ name: string, packagePath?: string, device?: string, force?: boolean }` |
 | `tauri_android_app_install` | Install APK onto emulator or device | `{ apkPath: string, deviceId?: string }` |
 | `tauri_android_test_run` | Launch Android app & inspect logcat | `{ packageName: string, activityName?: string, deviceId?: string }` |
-
+| `tauri_android_deps_install` | Install SDK dependencies via sdkmanager | `{ packages?: string[], acceptLicenses?: boolean }` |
 ## Standard Workflows
 
 ### 1. New Production Application Lifecycle
