@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { runTauriDoctor } from "../src/tools/doctor.js";
 import { resolveAndroidEnvironment } from "../src/tools/android.js";
-
 describe("Tauri Doctor Tool", () => {
   it("generates a structured toolchain report", () => {
     const report = runTauriDoctor();
@@ -25,7 +25,7 @@ describe("Tauri Doctor Tool", () => {
     expect(report.androidEnvironment).toBeDefined();
 
     // Check if host has Android SDK
-    const hostSdk = path.resolve(process.env.HOME || "", "Android/Sdk");
+    const hostSdk = path.resolve(os.homedir(), "Android/Sdk");
     if (fs.existsSync(hostSdk)) {
       expect(report.androidEnvironment.androidHome).toBe(hostSdk);
       expect(report.readyForAndroid).toBe(true);

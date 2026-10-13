@@ -1,6 +1,7 @@
 import { execSync, spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import os from "node:os";
 import { resolveAndroidEnvironment, type AndroidPathOverrides } from "./android.js";
 
 export interface EmulatorDevice {
@@ -257,7 +258,7 @@ export function listAndroidEmulators(overrides?: AndroidPathOverrides): Emulator
   }
 
   // Also check ~/.android/avd directory directly
-  const homeAvdDir = path.join(process.env.HOME || "", ".android", "avd");
+  const homeAvdDir = path.join(os.homedir(), ".android", "avd");
   if (fs.existsSync(homeAvdDir)) {
     try {
       const iniFiles = fs.readdirSync(homeAvdDir).filter(f => f.endsWith(".ini"));

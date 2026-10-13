@@ -71,7 +71,7 @@ describe("Tauri Android Emulator Tools", { timeout: 30000 }, () => {
   it("fails fast with clear error when installing missing APK", () => {
     expect(() => {
       installApkOnAndroid({
-        apkPath: "/tmp/non_existent_app_12345.apk",
+        apkPath: path.resolve("./non_existent_app_12345.apk"),
       });
     }).toThrow("APK file not found");
   });

@@ -67,9 +67,8 @@ Add to your client MCP configuration:
   "mcpServers": {
     "tauri-dev-tools": {
       "command": "node",
-      "args": ["/home/simson/omp/tauri-dev-tools/dist/index.js"]
+      "args": ["./dist/index.js"]
     }
-  }
 }
 ```
 
