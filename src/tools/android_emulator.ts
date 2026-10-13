@@ -17,6 +17,19 @@ export interface EmulatorListResult {
   adbPath: string;
   emulatorPath?: string;
 }
+function findExecutableOnPath(name: string): string | undefined {
+  try {
+    const finder = process.platform === "win32" ? "where" : "which";
+    const out = execSync(`${finder} ${name}`, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"], timeout: 3000 }).trim();
+    return out.split(/\r?\n/)[0]?.trim() || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+function sleepSync(ms: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
 
 export function findAdbBinary(androidHome?: string): string {
   const home = androidHome || resolveAndroidEnvironment().androidHome;
@@ -24,13 +37,7 @@ export function findAdbBinary(androidHome?: string): string {
     const localAdb = path.join(home, "platform-tools", process.platform === "win32" ? "adb.exe" : "adb");
     if (fs.existsSync(localAdb)) return localAdb;
   }
-  try {
-    const whichAdb = execSync("which adb", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-    if (whichAdb) return whichAdb;
-  } catch {
-    // Ignore which failure
-  }
-  return "adb";
+  return findExecutableOnPath("adb") || "adb";
 }
 
 export function findEmulatorBinary(androidHome?: string): string | undefined {
@@ -39,13 +46,7 @@ export function findEmulatorBinary(androidHome?: string): string | undefined {
     const localEmulator = path.join(home, "emulator", process.platform === "win32" ? "emulator.exe" : "emulator");
     if (fs.existsSync(localEmulator)) return localEmulator;
   }
-  try {
-    const whichEmulator = execSync("which emulator", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-    if (whichEmulator) return whichEmulator;
-  } catch {
-    // Ignore which failure
-  }
-  return undefined;
+  return findExecutableOnPath("emulator");
 }
 
 export function findAvdmanagerBinary(androidHome?: string): string | undefined {
@@ -54,13 +55,7 @@ export function findAvdmanagerBinary(androidHome?: string): string | undefined {
     const cand = path.join(home, "cmdline-tools", "latest", "bin", process.platform === "win32" ? "avdmanager.bat" : "avdmanager");
     if (fs.existsSync(cand)) return cand;
   }
-  try {
-    const whichAvd = execSync("which avdmanager", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-    if (whichAvd) return whichAvd;
-  } catch {
-    // Ignore
-  }
-  return undefined;
+  return findExecutableOnPath("avdmanager");
 }
 
 export function findSdkmanagerBinary(androidHome?: string): string | undefined {
@@ -69,13 +64,7 @@ export function findSdkmanagerBinary(androidHome?: string): string | undefined {
     const cand = path.join(home, "cmdline-tools", "latest", "bin", process.platform === "win32" ? "sdkmanager.bat" : "sdkmanager");
     if (fs.existsSync(cand)) return cand;
   }
-  try {
-    const whichSdk = execSync("which sdkmanager", { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
-    if (whichSdk) return whichSdk;
-  } catch {
-    // Ignore
-  }
-  return undefined;
+  return findExecutableOnPath("sdkmanager");
 }
 
 export interface AvdCreateOptions extends AndroidPathOverrides {
@@ -309,7 +298,7 @@ export function startAndroidEmulator(options: EmulatorStartOptions): EmulatorSta
     } catch {
       // Continue polling
     }
-    execSync("sleep 1");
+    sleepSync(1000);
   }
 
   // Wait until full userspace boot completion
@@ -324,7 +313,7 @@ export function startAndroidEmulator(options: EmulatorStartOptions): EmulatorSta
     } catch {
       // Continue polling
     }
-    execSync("sleep 1");
+    sleepSync(1000);
   }
   if (!connectedDeviceId) {
     return {

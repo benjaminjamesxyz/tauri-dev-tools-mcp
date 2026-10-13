@@ -51,11 +51,21 @@ export function runTauriDoctor(optionsOrPath?: DoctorOptions | string): DoctorRe
   checks.push(checkCmd("Tauri CLI", "cargo tauri --version", false, "Install via: cargo install tauri-cli --version '^2.0.0' or use npx @tauri-apps/cli"));
   checks.push(checkCmd("Node.js", "node --version", true, "Install Node.js 18+ or Bun"));
 
-  // Linux Webview dependencies
+  // Platform-specific Webview & toolchain dependencies
   if (process.platform === "linux") {
     checks.push(checkCmd("WebKitGTK (webkit2gtk-4.1)", "pkg-config --modversion webkit2gtk-4.1", true, "Install libwebkit2gtk-4.1-dev or webkit2gtk-4.1"));
+  } else if (process.platform === "win32") {
+    const hasWebView2 = fs.existsSync(`${process.env.LOCALAPPDATA || ""}\\Microsoft\\EdgeWebView`)
+      || fs.existsSync(`${process.env["ProgramFiles(x86)"] || "C:\\Program Files (x86)"}\\Microsoft\\EdgeWebView\\Application`);
+    checks.push({
+      name: "Microsoft Edge WebView2 Runtime",
+      installed: hasWebView2,
+      required: true,
+      recommendation: "Install Evergreen WebView2 Runtime from https://developer.microsoft.com/microsoft-edge/webview2",
+    });
+  } else if (process.platform === "darwin") {
+    checks.push(checkCmd("Xcode Command Line Tools", "xcode-select -p", true, "Install via: xcode-select --install"));
   }
-
   // Android Toolchain Auto-detection & Resolution
   const androidEnv = resolveAndroidEnvironment({ androidHome, ndkHome, javaHome });
 

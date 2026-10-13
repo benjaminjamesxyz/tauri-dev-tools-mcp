@@ -121,8 +121,12 @@ export function resolveAndroidEnvironment(overrides?: AndroidPathOverrides): Res
       "/usr/lib/jvm/default",
       "/usr/lib/jvm/default-runtime",
       "/usr/lib/jvm/java-27-openjdk",
+      "/Library/Java/JavaVirtualMachines/temurin-17.jdk/Contents/Home",
+      "/Library/Java/JavaVirtualMachines/zulu-17.jdk/Contents/Home",
+      "C:\\Program Files\\Eclipse Adoptium\\jdk-17",
+      "C:\\Program Files\\Java\\jdk-17",
+      "C:\\Program Files\\Microsoft\\jdk-17",
     ];
-
     for (const cand of jvmCandidates) {
       if (fs.existsSync(cand) && fs.statSync(cand).isDirectory()) {
         resolvedJava = cand;
